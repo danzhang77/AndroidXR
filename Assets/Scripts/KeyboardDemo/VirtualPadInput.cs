@@ -74,6 +74,12 @@ namespace AndroidXR.KeyboardDemo
 
         private bool TryGetNormalizedPoint(Vector2 screenPosition, out Vector2 normalizedPoint)
         {
+            if (!RectTransformUtility.RectangleContainsScreenPoint(padRect, screenPosition, null))
+            {
+                normalizedPoint = default;
+                return false;
+            }
+
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(padRect, screenPosition, null, out var localPoint))
             {
                 normalizedPoint = default;

@@ -19,6 +19,16 @@
       "source": "registry",
       "testable": false
     },
+    "com.unity.device-simulator.devices@1.0.0": {
+      "name": "com.unity.device-simulator.devices",
+      "displayName": "Device Simulator Devices",
+      "resolvedPath": "/Users/hci_danzhang/Documents/GitHub/AndroidXR/Library/PackageCache/com.unity.device-simulator.devices@ae8874e9c898",
+      "fingerprint": "ae8874e9c898e20961be6f426dfafaf49f604cda",
+      "editorCompatibility": "2022.1.0a1",
+      "version": "1.0.0",
+      "source": "registry",
+      "testable": false
+    },
     "com.unity.editorcoroutines@1.1.0": {
       "name": "com.unity.editorcoroutines",
       "displayName": "Editor Coroutines",

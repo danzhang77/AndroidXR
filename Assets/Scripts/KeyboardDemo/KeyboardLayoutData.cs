@@ -47,23 +47,30 @@ namespace AndroidXR.KeyboardDemo
             var keys = new List<KeyboardKeyDefinition>();
             var random = new System.Random(randomSeed);
 
-            const float horizontalPadding = 0.05f;
-            const float verticalPadding = 0.07f;
-            const float horizontalGap = 0.02f;
-            const float verticalGap = 0.03f;
+            const float horizontalPadding = 0.035f;
+            const float verticalPadding = 0.06f;
+            const float horizontalGap = 0.012f;
+            const float verticalGap = 0.024f;
             const int rowCount = 4;
 
             var rowHeight = (1f - (2f * verticalPadding) - ((rowCount - 1) * verticalGap)) / rowCount;
-            var letterWidth = (1f - (2f * horizontalPadding) - (4f * horizontalGap)) / 5f;
-            var specialWidth = (1f - (2f * horizontalPadding) - horizontalGap) * 0.5f;
+            var letterWidth = (1f - (2f * horizontalPadding) - (9f * horizontalGap)) / 10f;
+            var secondRowOffset = (letterWidth + horizontalGap) * 0.5f;
+            var thirdRowOffset = letterWidth + horizontalGap;
+            var backWidth = (2f * letterWidth) + horizontalGap;
+            var spaceWidth = (4f * letterWidth) + (3f * horizontalGap);
+            var sideWidth = (3f * letterWidth) + (2f * horizontalGap);
 
-            AddRow(keys, random, 0, new[] { "Q", "W", "E", "R", "T" }, KeyboardKeyKind.Character, horizontalPadding, verticalPadding, letterWidth, rowHeight, horizontalGap, sigmaMin, sigmaMax);
-            AddRow(keys, random, 1, new[] { "A", "S", "D", "F", "G" }, KeyboardKeyKind.Character, horizontalPadding, verticalPadding, letterWidth, rowHeight, horizontalGap, sigmaMin, sigmaMax);
-            AddRow(keys, random, 2, new[] { "Z", "X", "C", "V", "B" }, KeyboardKeyKind.Character, horizontalPadding, verticalPadding, letterWidth, rowHeight, horizontalGap, sigmaMin, sigmaMax);
+            AddRow(keys, random, 0, new[] { "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P" }, KeyboardKeyKind.Character, horizontalPadding, verticalPadding, letterWidth, rowHeight, horizontalGap, verticalGap, sigmaMin, sigmaMax, 0f);
+            AddRow(keys, random, 1, new[] { "A", "S", "D", "F", "G", "H", "J", "K", "L" }, KeyboardKeyKind.Character, horizontalPadding, verticalPadding, letterWidth, rowHeight, horizontalGap, verticalGap, sigmaMin, sigmaMax, secondRowOffset);
+            AddRow(keys, random, 2, new[] { "Z", "X", "C", "V", "B", "N", "M" }, KeyboardKeyKind.Character, horizontalPadding, verticalPadding, letterWidth, rowHeight, horizontalGap, verticalGap, sigmaMin, sigmaMax, thirdRowOffset);
 
-            var rowY = 1f - verticalPadding - rowHeight - (3f * (rowHeight + verticalGap));
-            AddKey(keys, random, "SPACE", "SPACE", KeyboardKeyKind.Space, new Rect(horizontalPadding, rowY, specialWidth, rowHeight), sigmaMin, sigmaMax);
-            AddKey(keys, random, "BACK", "BACK", KeyboardKeyKind.Backspace, new Rect(horizontalPadding + specialWidth + horizontalGap, rowY, specialWidth, rowHeight), sigmaMin, sigmaMax);
+            var rowY = 1f - verticalPadding - rowHeight - (2f * (rowHeight + verticalGap));
+            var backX = horizontalPadding + thirdRowOffset + (7f * (letterWidth + horizontalGap));
+            AddKey(keys, random, "BACK", "BACK", KeyboardKeyKind.Backspace, new Rect(backX, rowY, backWidth, rowHeight), sigmaMin, sigmaMax);
+
+            rowY = 1f - verticalPadding - rowHeight - (3f * (rowHeight + verticalGap));
+            AddKey(keys, random, "SPACE", "SPACE", KeyboardKeyKind.Space, new Rect(horizontalPadding + sideWidth + horizontalGap, rowY, spaceWidth, rowHeight), sigmaMin, sigmaMax);
 
             return new KeyboardLayoutData(keys, rowHeight);
         }
@@ -79,14 +86,16 @@ namespace AndroidXR.KeyboardDemo
             float keyWidth,
             float keyHeight,
             float horizontalGap,
+            float verticalGap,
             float sigmaMin,
-            float sigmaMax)
+            float sigmaMax,
+            float horizontalOffset)
         {
-            var rowY = 1f - verticalPadding - keyHeight - (rowIndex * (keyHeight + 0.03f));
+            var rowY = 1f - verticalPadding - keyHeight - (rowIndex * (keyHeight + verticalGap));
 
             for (var i = 0; i < labels.Count; i++)
             {
-                var x = horizontalPadding + (i * (keyWidth + horizontalGap));
+                var x = horizontalPadding + horizontalOffset + (i * (keyWidth + horizontalGap));
                 AddKey(keys, random, labels[i], labels[i], kind, new Rect(x, rowY, keyWidth, keyHeight), sigmaMin, sigmaMax);
             }
         }

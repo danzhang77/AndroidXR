@@ -50,7 +50,7 @@ namespace AndroidXR.KeyboardDemo
             presenter.SetStatus(BuildPlaceholderMessage());
 
             padInput = new VirtualPadInput(
-                presenter.PadRect,
+                presenter.PadInputRect,
                 presenter.SetTouchPreview,
                 HandleTouchReleased,
                 HandleTouchCanceled);
