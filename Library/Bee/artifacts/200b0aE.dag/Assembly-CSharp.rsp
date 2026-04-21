@@ -394,6 +394,7 @@
 -r:"Library/PackageCache/com.unity.ext.nunit@d8c07649098d/net40/unity-custom/nunit.framework.dll"
 -r:"Library/PackageCache/com.unity.testtools.codecoverage@19a841221620/lib/ReportGenerator/ReportGeneratorMerged.dll"
 -r:"Library/PackageCache/com.unity.visualscripting@6279e2b7c485/Runtime/VisualScripting.Flow/Dependencies/NCalc/Unity.VisualScripting.Antlr3.Runtime.dll"
+-r:"Library/Bee/artifacts/200b0aE.dag/endel.nativewebsocket.ref.dll"
 -r:"Library/Bee/artifacts/200b0aE.dag/Unity.EditorCoroutines.Editor.ref.dll"
 -r:"Library/Bee/artifacts/200b0aE.dag/Unity.InternalAPIEngineBridge.004.ref.dll"
 -r:"Library/Bee/artifacts/200b0aE.dag/Unity.Multiplayer.Center.Common.ref.dll"
@@ -429,6 +430,16 @@
 "Assets/Scripts/KeyboardDemo/KeyboardLayoutData.cs"
 "Assets/Scripts/KeyboardDemo/KeyboardPresenter.cs"
 "Assets/Scripts/KeyboardDemo/VirtualPadInput.cs"
+"Assets/Scripts/Protocol/ClientHelloPayload.cs"
+"Assets/Scripts/Protocol/KeyboardCommitPayload.cs"
+"Assets/Scripts/Protocol/NormalizedPointPayload.cs"
+"Assets/Scripts/Protocol/TrackpadTouchPayload.cs"
+"Assets/Scripts/Protocol/XrMessageEnvelope.cs"
+"Assets/Scripts/Protocol/XrProtocolConstants.cs"
+"Assets/Scripts/Trackpad/TrackpadPhase.cs"
+"Assets/Scripts/Transport/IWebSocketTransport.cs"
+"Assets/Scripts/Transport/RelayConnection.cs"
+"Assets/Scripts/Transport/UnityWebSocketTransport.cs"
 -langversion:9.0
 /deterministic
 /optimize+

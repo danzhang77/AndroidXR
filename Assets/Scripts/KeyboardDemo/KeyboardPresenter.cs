@@ -6,18 +6,9 @@ namespace AndroidXR.KeyboardDemo
 {
     public sealed class KeyboardPresenter
     {
-        private readonly Dictionary<string, List<Image>> keyBackgrounds = new();
         private readonly RectTransform padRect;
         private readonly RectTransform padInputRect;
         private readonly Image padTouchMarker;
-        private readonly Text outputText;
-        private readonly Text statusText;
-        private readonly Color keyBaseColor;
-        private readonly Color keyFlashColor;
-        private readonly float flashDuration;
-
-        private string flashingKeyId;
-        private float flashTimeRemaining;
 
         public RectTransform PadRect => padRect;
         public RectTransform PadInputRect => padInputRect;
@@ -30,21 +21,11 @@ namespace AndroidXR.KeyboardDemo
             Color keyFlashColor,
             float flashDuration)
         {
-            this.keyBaseColor = keyBaseColor;
-            this.keyFlashColor = keyFlashColor;
-            this.flashDuration = flashDuration;
-
             var canvas = CreateCanvas(root.gameObject);
             CreateBackdrop(canvas.transform);
-            outputText = CreateOutputText(canvas.transform, font);
-            statusText = CreateStatusText(canvas.transform, font);
 
-            var keyboardPanel = CreatePanel(canvas.transform, "Floating Keyboard", new Vector2(1120f, 360f), new Vector2(0.5f, 0.72f), new Vector2(0.5f, 0.72f), new Vector2(0f, 0f), new Color(0.06f, 0.1f, 0.14f, 0.56f));
-            CreatePanelHeader(keyboardPanel, "Floating Keyboard View", font);
-            BuildKeys(CreateContentArea(keyboardPanel, 44f, 10f), keys, font, keyBaseColor, 26, true);
-
-            padRect = CreatePanel(canvas.transform, "Simulation Pad", new Vector2(980f, 250f), new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f), Vector2.zero, new Color(0.06f, 0.09f, 0.12f, 0.92f));
-            CreatePanelHeader(padRect, "Simulation Pad", font);
+            padRect = CreatePanel(canvas.transform, "Trackpad", new Vector2(1120f, 620f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Color(0.06f, 0.09f, 0.12f, 0.92f));
+            CreatePanelHeader(padRect, "Trackpad Input", font);
             padInputRect = CreateContentArea(padRect, 44f, 14f);
             CreatePadFrame(padInputRect);
             padTouchMarker = CreatePadTouchMarker(padInputRect);
@@ -52,12 +33,12 @@ namespace AndroidXR.KeyboardDemo
 
         public void SetOutput(string value)
         {
-            outputText.text = value.Length == 0 ? "Type using the pad below" : value;
+            // Text output is rendered by the browser glasses view.
         }
 
         public void SetStatus(string value)
         {
-            statusText.text = value;
+            // Status is intentionally hidden on the phone input surface.
         }
 
         public void SetTouchPreview(Vector2? normalizedPoint)
@@ -79,108 +60,12 @@ namespace AndroidXR.KeyboardDemo
 
         public void FlashKey(string keyId)
         {
-            if (!string.IsNullOrEmpty(flashingKeyId) && keyBackgrounds.TryGetValue(flashingKeyId, out var previousBackgrounds))
-            {
-                for (var i = 0; i < previousBackgrounds.Count; i++)
-                {
-                    previousBackgrounds[i].color = keyBaseColor;
-                }
-            }
-
-            flashingKeyId = keyId;
-            flashTimeRemaining = flashDuration;
-
-            if (keyBackgrounds.TryGetValue(keyId, out var backgrounds))
-            {
-                for (var i = 0; i < backgrounds.Count; i++)
-                {
-                    backgrounds[i].color = keyFlashColor;
-                }
-            }
+            // Key highlighting is rendered by the browser glasses view.
         }
 
         public void Tick(float deltaTime)
         {
-            if (string.IsNullOrEmpty(flashingKeyId))
-            {
-                return;
-            }
-
-            flashTimeRemaining -= deltaTime;
-            if (!keyBackgrounds.TryGetValue(flashingKeyId, out var backgrounds))
-            {
-                flashingKeyId = null;
-                flashTimeRemaining = 0f;
-                return;
-            }
-
-            var t = Mathf.Clamp01(flashTimeRemaining / flashDuration);
-            var color = Color.Lerp(keyBaseColor, keyFlashColor, t);
-            for (var i = 0; i < backgrounds.Count; i++)
-            {
-                backgrounds[i].color = color;
-            }
-
-            if (flashTimeRemaining > 0f)
-            {
-                return;
-            }
-
-            for (var i = 0; i < backgrounds.Count; i++)
-            {
-                backgrounds[i].color = keyBaseColor;
-            }
-            flashingKeyId = null;
-        }
-
-        private void BuildKeys(
-            RectTransform keyboardPanel,
-            IReadOnlyList<KeyboardKeyDefinition> keys,
-            Font font,
-            Color baseColor,
-            int fontSize,
-            bool useFloatingScale)
-        {
-            for (var i = 0; i < keys.Count; i++)
-            {
-                var key = keys[i];
-                var keyObject = new GameObject($"{key.Id} Key", typeof(RectTransform), typeof(Image));
-                keyObject.transform.SetParent(keyboardPanel, false);
-
-                var rectTransform = keyObject.GetComponent<RectTransform>();
-                rectTransform.anchorMin = new Vector2(key.NormalizedRect.xMin, key.NormalizedRect.yMin);
-                rectTransform.anchorMax = new Vector2(key.NormalizedRect.xMax, key.NormalizedRect.yMax);
-                rectTransform.offsetMin = new Vector2(useFloatingScale ? 6f : 3f, useFloatingScale ? 6f : 3f);
-                rectTransform.offsetMax = new Vector2(useFloatingScale ? -6f : -3f, useFloatingScale ? -6f : -3f);
-
-                var image = keyObject.GetComponent<Image>();
-                image.color = baseColor;
-
-                var labelObject = new GameObject("Label", typeof(RectTransform), typeof(Text));
-                labelObject.transform.SetParent(keyObject.transform, false);
-
-                var labelRect = labelObject.GetComponent<RectTransform>();
-                labelRect.anchorMin = Vector2.zero;
-                labelRect.anchorMax = Vector2.one;
-                labelRect.offsetMin = Vector2.zero;
-                labelRect.offsetMax = Vector2.zero;
-
-                var text = labelObject.GetComponent<Text>();
-                text.font = font;
-                text.text = key.Label;
-                text.fontSize = key.Kind == KeyboardKeyKind.Character ? fontSize : fontSize - 2;
-                text.alignment = TextAnchor.MiddleCenter;
-                text.color = Color.white;
-                text.resizeTextForBestFit = false;
-
-                if (!keyBackgrounds.TryGetValue(key.Id, out var backgroundList))
-                {
-                    backgroundList = new List<Image>();
-                    keyBackgrounds[key.Id] = backgroundList;
-                }
-
-                backgroundList.Add(image);
-            }
+            // Browser view owns transient visual effects.
         }
 
         private static Canvas CreateCanvas(GameObject owner)
@@ -235,48 +120,6 @@ namespace AndroidXR.KeyboardDemo
             image.color = backgroundColor;
 
             return rect;
-        }
-
-        private static Text CreateOutputText(Transform parent, Font font)
-        {
-            var outputRoot = CreatePanel(parent, "Output", new Vector2(900f, 90f), new Vector2(0.5f, 0.93f), new Vector2(0.5f, 0.93f), Vector2.zero, new Color(0.02f, 0.07f, 0.1f, 0.88f));
-            var textObject = new GameObject("Output Text", typeof(RectTransform), typeof(Text));
-            textObject.transform.SetParent(outputRoot, false);
-
-            var rect = textObject.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(24f, 14f);
-            rect.offsetMax = new Vector2(-24f, -14f);
-
-            var text = textObject.GetComponent<Text>();
-            text.font = font;
-            text.fontSize = 34;
-            text.alignment = TextAnchor.MiddleLeft;
-            text.color = Color.white;
-            text.text = "Type using the pad below";
-            return text;
-        }
-
-        private static Text CreateStatusText(Transform parent, Font font)
-        {
-            var statusRoot = CreatePanel(parent, "Status", new Vector2(900f, 44f), new Vector2(0.5f, 0.87f), new Vector2(0.5f, 0.87f), Vector2.zero, new Color(0f, 0f, 0f, 0f));
-            var textObject = new GameObject("Status Text", typeof(RectTransform), typeof(Text));
-            textObject.transform.SetParent(statusRoot, false);
-
-            var rect = textObject.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            var text = textObject.GetComponent<Text>();
-            text.font = font;
-            text.fontSize = 22;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = new Color(0.7f, 0.84f, 0.93f, 1f);
-            text.text = "Click inside the pad, then release to commit a key";
-            return text;
         }
 
         private static void CreatePanelHeader(RectTransform panel, string title, Font font)

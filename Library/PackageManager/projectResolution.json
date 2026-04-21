@@ -9,6 +9,16 @@
     "/Applications/Unity/Hub/Editor/6000.3.0b4/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/BuiltInPackagesCombined.sha1"
   ],
   "outputs": {
+    "com.endel.nativewebsocket@https://github.com/endel/NativeWebSocket.git#upm": {
+      "name": "com.endel.nativewebsocket",
+      "displayName": "Native WebSockets",
+      "resolvedPath": "/Users/hci_danzhang/Documents/GitHub/AndroidXR/Library/PackageCache/com.endel.nativewebsocket@ea014c9ae534",
+      "fingerprint": "ea014c9ae534d56111962d96f89f8a046e302dc9",
+      "editorCompatibility": "2019.1.0a1",
+      "version": "1.1.6",
+      "source": "git",
+      "testable": false
+    },
     "com.unity.collab-proxy@2.12.4": {
       "name": "com.unity.collab-proxy",
       "displayName": "Unity Version Control",

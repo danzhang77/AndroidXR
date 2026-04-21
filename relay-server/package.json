@@ -1,0 +1,13 @@
+{
+  "name": "androidxr-relay-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local WebSocket relay for Android XR input prototypes.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.17.1"
+  }
+}
+

@@ -6,6 +6,8 @@ namespace AndroidXR.KeyboardDemo
     public sealed class VirtualPadInput
     {
         private readonly RectTransform padRect;
+        private readonly Action<Vector2> onTouchStarted;
+        private readonly Action<Vector2> onTouchMoved;
         private readonly Action<Vector2?> onPreviewChanged;
         private readonly Action<Vector2> onTouchReleased;
         private readonly Action onTouchCanceled;
@@ -15,11 +17,15 @@ namespace AndroidXR.KeyboardDemo
 
         public VirtualPadInput(
             RectTransform padRect,
+            Action<Vector2> onTouchStarted,
+            Action<Vector2> onTouchMoved,
             Action<Vector2?> onPreviewChanged,
             Action<Vector2> onTouchReleased,
             Action onTouchCanceled)
         {
             this.padRect = padRect;
+            this.onTouchStarted = onTouchStarted;
+            this.onTouchMoved = onTouchMoved;
             this.onPreviewChanged = onPreviewChanged;
             this.onTouchReleased = onTouchReleased;
             this.onTouchCanceled = onTouchCanceled;
@@ -33,6 +39,7 @@ namespace AndroidXR.KeyboardDemo
                 {
                     isTouchActive = true;
                     currentTouchPoint = normalizedPoint;
+                    onTouchStarted?.Invoke(normalizedPoint);
                     onPreviewChanged?.Invoke(normalizedPoint);
                 }
             }
@@ -42,6 +49,7 @@ namespace AndroidXR.KeyboardDemo
                 if (TryGetNormalizedPoint(Input.mousePosition, out var normalizedPoint))
                 {
                     currentTouchPoint = normalizedPoint;
+                    onTouchMoved?.Invoke(normalizedPoint);
                     onPreviewChanged?.Invoke(normalizedPoint);
                 }
                 else

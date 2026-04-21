@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Android XR Glasses Demo</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="toolbar">
+        <div>
+          <h1>Android XR Glasses Demo</h1>
+          <p id="status">Disconnected</p>
+        </div>
+        <form id="connectionForm" class="connection">
+          <input id="serverUrl" type="text" value="ws://localhost:8787" aria-label="Relay server URL">
+          <button type="submit">Connect</button>
+        </form>
+      </section>
+
+      <div class="typed" id="typedText">Type on the phone trackpad</div>
+
+      <section class="glasses" aria-label="Simulated glasses view">
+        <div class="viewport" id="viewport">
+          <div class="hud">
+            <span id="roleStatus">Waiting for Android</span>
+            <span id="lastTouch">x -, y -</span>
+          </div>
+          <div class="keyboard-stage">
+            <div class="keyboard" id="keyboard" aria-label="QWERTY keyboard visualization"></div>
+          </div>
+          <div class="cursor" id="cursor"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
