@@ -8,12 +8,16 @@ const lastTouchEl = document.querySelector('#lastTouch');
 const cursorEl = document.querySelector('#cursor');
 const typedTextEl = document.querySelector('#typedText');
 const keyboardEl = document.querySelector('#keyboard');
+const suggestionsEl = document.querySelector('#suggestions');
+const SUGGESTION_SELECTION_Y_MIN = 0.86;
 
 let socket = null;
 let seq = 1;
 let typedText = '';
 let keys = [];
+let currentSuggestions = [];
 let previewKeyId = null;
+let previewSuggestionIndex = null;
 let flashTimeout = null;
 
 if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
@@ -56,9 +60,17 @@ function renderTouch(payload) {
 
   if (payload.phase === 'up' || payload.phase === 'cancel') {
     clearPreviewKey();
+    clearPreviewSuggestion();
     return;
   }
 
+  if (y >= SUGGESTION_SELECTION_Y_MIN && currentSuggestions.length > 0) {
+    clearPreviewKey();
+    setPreviewSuggestion(Math.min(2, Math.floor(x * 3)));
+    return;
+  }
+
+  clearPreviewSuggestion();
   setPreviewKey(findClosestKey(x, y));
 }
 
@@ -66,6 +78,8 @@ function renderCommit(payload) {
   if (typeof payload.text === 'string') {
     if (payload.kind === 'backspace') {
       typedText = typedText.slice(0, -1);
+    } else if (payload.kind === 'replace_current_word') {
+      typedText = replaceCurrentWord(typedText, payload.text);
     } else {
       typedText += payload.text;
     }
@@ -73,6 +87,25 @@ function renderCommit(payload) {
 
   typedTextEl.textContent = typedText.length > 0 ? typedText : 'Type on the phone trackpad';
   flashKey(payload.keyId);
+}
+
+function renderSuggestions(payload) {
+  const suggestions = Array.isArray(payload.suggestions) ? payload.suggestions.slice(0, 3) : [];
+  currentSuggestions = suggestions.filter((value) => value);
+  previewSuggestionIndex = null;
+  suggestionsEl.replaceChildren();
+
+  for (let i = 0; i < 3; i++) {
+    const item = document.createElement('div');
+    item.className = 'suggestion';
+    item.dataset.suggestionIndex = String(i);
+    item.textContent = suggestions[i] || '';
+    suggestionsEl.appendChild(item);
+  }
+}
+
+function replaceCurrentWord(value, replacement) {
+  return value.replace(/\S*$/, replacement);
 }
 
 function renderRelayStatus(payload) {
@@ -191,6 +224,29 @@ function clearPreviewKey() {
   previewKeyId = null;
 }
 
+function setPreviewSuggestion(index) {
+  if (index === previewSuggestionIndex || !currentSuggestions[index]) {
+    return;
+  }
+
+  clearPreviewSuggestion();
+  previewSuggestionIndex = index;
+  suggestionElement(index)?.classList.add('preview');
+}
+
+function clearPreviewSuggestion() {
+  if (previewSuggestionIndex === null) {
+    return;
+  }
+
+  suggestionElement(previewSuggestionIndex)?.classList.remove('preview');
+  previewSuggestionIndex = null;
+}
+
+function suggestionElement(index) {
+  return suggestionsEl.querySelector(`[data-suggestion-index="${index}"]`);
+}
+
 function flashKey(keyId) {
   if (!keyId) {
     return;
@@ -231,7 +287,7 @@ function connect(url) {
     send(envelope('client.hello', 'relay', {
       role: 'browser',
       clientName: 'Browser Glasses Demo',
-      capabilities: ['trackpad.touch', 'keyboard.commit']
+      capabilities: ['trackpad.touch', 'keyboard.commit', 'keyboard.suggestions']
     }));
   });
 
@@ -251,6 +307,8 @@ function connect(url) {
       renderTouch(message.payload);
     } else if (message.type === 'keyboard.commit') {
       renderCommit(message.payload);
+    } else if (message.type === 'keyboard.suggestions') {
+      renderSuggestions(message.payload);
     } else if (message.type === 'relay.status') {
       renderRelayStatus(message.payload);
     }
@@ -272,4 +330,5 @@ form.addEventListener('submit', (event) => {
 });
 
 renderKeyboard();
+renderSuggestions({ suggestions: [] });
 connect(serverUrlInput.value);

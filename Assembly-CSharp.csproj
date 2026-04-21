@@ -65,18 +65,28 @@
     <Compile Include="Assets/Scripts/Protocol/XrMessageEnvelope.cs" />
     <Compile Include="Assets/Scripts/Trackpad/TrackpadPhase.cs" />
     <Compile Include="Assets/Scripts/Protocol/ClientHelloPayload.cs" />
+    <Compile Include="Assets/Scripts/LanguageModel/LanguageModelLoader.cs" />
     <Compile Include="Assets/Scripts/KeyboardDemo/GaussianKeyDecoder.cs" />
     <Compile Include="Assets/Scripts/KeyboardDemo/KeyboardLayoutData.cs" />
     <Compile Include="Assets/Scripts/Protocol/KeyboardCommitPayload.cs" />
     <Compile Include="Assets/Scripts/Transport/IWebSocketTransport.cs" />
+    <Compile Include="Assets/Scripts/Protocol/KeyboardSuggestionsPayload.cs" />
     <Compile Include="Assets/Scripts/Protocol/TrackpadTouchPayload.cs" />
     <Compile Include="Assets/Scripts/Protocol/XrProtocolConstants.cs" />
+    <Compile Include="Assets/Scripts/LanguageModel/WordDecodeResult.cs" />
     <Compile Include="Assets/Scripts/KeyboardDemo/KeyboardDemoBootstrap.cs" />
     <Compile Include="Assets/Scripts/Protocol/NormalizedPointPayload.cs" />
+    <Compile Include="Assets/Scripts/LanguageModel/Vocabulary.cs" />
+    <Compile Include="Assets/Scripts/LanguageModel/TouchSequenceWordDecoder.cs" />
     <Compile Include="Assets/Scripts/KeyboardDemo/VirtualPadInput.cs" />
     <Compile Include="Assets/Scripts/KeyboardDemo/KeyboardPresenter.cs" />
+    <Compile Include="Assets/Scripts/LanguageModel/BigramLanguageModel.cs" />
     <Compile Include="Assets/Scripts/Transport/UnityWebSocketTransport.cs" />
     <Compile Include="Assets/Scripts/KeyboardDemo/KeyboardDemoController.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets/StreamingAssets/dict10k.txt" />
+    <None Include="Assets/StreamingAssets/sorted_bigram.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

@@ -33,6 +33,7 @@ Coordinates are normalized floats in `[0,1]`. Origin is bottom-left, matching th
 - `relay.status`: relay-generated client count/status update.
 - `trackpad.touch`: normalized touch down/move/up/cancel event.
 - `keyboard.commit`: Android-side decoder committed a key.
+- `keyboard.suggestions`: Android-side decoder produced current word suggestions.
 - `keyboard.clear`: Android cleared committed text.
 
 ## Payloads
@@ -77,3 +78,37 @@ Coordinates are normalized floats in `[0,1]`. Origin is bottom-left, matching th
 }
 ```
 
+For Android-side language model correction, `kind` may also be:
+
+```text
+replace_current_word
+```
+
+In that case, `text` contains the replacement word plus any trailing delimiter, for example:
+
+```json
+{
+  "keyId": "SPACE",
+  "label": "SPACE",
+  "text": "hello ",
+  "kind": "replace_current_word",
+  "confidence": 1.0,
+  "touch": {
+    "x": 0.5,
+    "y": 0.1
+  }
+}
+```
+
+The browser replaces the currently visible unfinished word with `text`.
+
+### keyboard.suggestions
+
+```json
+{
+  "rawWord": "hek",
+  "suggestions": ["her", "hey", "he"]
+}
+```
+
+The browser renders up to three suggestions above the keyboard. This message is advisory only and does not commit text.

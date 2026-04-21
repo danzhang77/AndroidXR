@@ -45,7 +45,7 @@ namespace AndroidXR.Transport
             {
                 role = XrProtocolConstants.SourceAndroid,
                 clientName = SystemInfo.deviceName,
-                capabilities = new[] { XrProtocolConstants.TrackpadTouch, XrProtocolConstants.KeyboardCommit },
+                capabilities = new[] { XrProtocolConstants.TrackpadTouch, XrProtocolConstants.KeyboardCommit, XrProtocolConstants.KeyboardSuggestions },
             };
 
             Send(XrProtocolConstants.ClientHello, XrProtocolConstants.TargetRelay, payload);
@@ -75,4 +75,3 @@ namespace AndroidXR.Transport
         }
     }
 }
-

@@ -129,9 +129,42 @@ button {
 .keyboard-stage {
   position: absolute;
   left: 50%;
-  top: 56%;
+  top: 54%;
   transform: translate(-50%, -50%);
   width: min(920px, calc(100% - 80px));
+}
+
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  min-height: 44px;
+  margin-bottom: 12px;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #40515a;
+  border-radius: 6px;
+  background: rgba(9, 15, 18, 0.78);
+  color: #dce8ed;
+  font-size: 18px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion.preview {
+  border-color: #ffdf58;
+  background: #ffd84d;
+  color: #111315;
+  box-shadow: 0 0 18px rgba(255, 216, 77, 0.45);
 }
 
 .keyboard {
@@ -214,5 +247,16 @@ button {
   .key {
     font-size: 12px;
     border-radius: 4px;
+  }
+
+  .suggestions {
+    gap: 6px;
+    min-height: 36px;
+    margin-bottom: 8px;
+  }
+
+  .suggestion {
+    height: 36px;
+    font-size: 13px;
   }
 }
