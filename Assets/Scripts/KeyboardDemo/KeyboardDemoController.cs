@@ -14,10 +14,10 @@ namespace AndroidXR.KeyboardDemo
         [SerializeField] private bool connectToRelay = true;
         [SerializeField] private string relayUrl = "ws://localhost:8787";
 
-        [Header("Gaussian Placeholder Parameters")]
-        [SerializeField] private int placeholderRandomSeed = 11;
-        [SerializeField] private float placeholderSigmaMin = 0.075f;
-        [SerializeField] private float placeholderSigmaMax = 0.095f;
+        [Header("Fallback Touch Distribution")]
+        [SerializeField] private int fallbackRandomSeed = 11;
+        [SerializeField] private float fallbackSigmaMin = 0.075f;
+        [SerializeField] private float fallbackSigmaMax = 0.095f;
 
         [Header("Commit Tuning")]
         [SerializeField] private bool thresholdUsesLetterKeyHeight = true;
@@ -53,9 +53,9 @@ namespace AndroidXR.KeyboardDemo
         {
             decoder = new GaussianKeyDecoder();
             layout = KeyboardLayoutData.CreateDefaultLayout(
-                placeholderRandomSeed,
-                placeholderSigmaMin,
-                placeholderSigmaMax);
+                fallbackRandomSeed,
+                fallbackSigmaMin,
+                fallbackSigmaMax);
 
             if (thresholdUsesLetterKeyHeight)
             {
@@ -110,23 +110,27 @@ namespace AndroidXR.KeyboardDemo
         private void HandleTouchStarted(Vector2 touchPoint)
         {
             SendTouch(TrackpadPhase.Down, touchPoint);
+            SendKeyboardPreview(IsSuggestionSelectionPoint(touchPoint) ? null : MapTouchPointToKeyboard(touchPoint));
         }
 
         private void HandleTouchMoved(Vector2 touchPoint)
         {
             SendTouch(TrackpadPhase.Move, touchPoint);
+            SendKeyboardPreview(IsSuggestionSelectionPoint(touchPoint) ? null : MapTouchPointToKeyboard(touchPoint));
         }
 
         private void HandleTouchReleased(Vector2 touchPoint)
         {
             SendTouch(TrackpadPhase.Up, touchPoint);
+            SendKeyboardPreview(null);
 
             if (TryCommitSuggestion(touchPoint))
             {
                 return;
             }
 
-            var result = decoder.Decode(layout.Keys, touchPoint, commitDistanceThreshold);
+            var keyboardTouchPoint = MapTouchPointToKeyboard(touchPoint);
+            var result = decoder.Decode(layout.Keys, keyboardTouchPoint, commitDistanceThreshold);
 
             if (!result.IsCommitted || result.Key == null)
             {
@@ -134,11 +138,11 @@ namespace AndroidXR.KeyboardDemo
                 return;
             }
 
-            CommitKey(result.Key, touchPoint, out var committedText, out var committedKind);
-            SendKeyboardCommit(result, touchPoint, committedText, committedKind);
+            CommitKey(result.Key, keyboardTouchPoint, out var committedText, out var committedKind);
+            SendKeyboardCommit(result, keyboardTouchPoint, committedText, committedKind);
             presenter.FlashKey(result.Key.Id);
             presenter.SetOutput(typedText.ToString());
-            presenter.SetStatus($"Committed {result.Key.Label} with placeholder sigma ({result.Key.GaussianSigma.x:F3}, {result.Key.GaussianSigma.y:F3}).");
+            presenter.SetStatus($"Committed {result.Key.Label}.");
         }
 
         private void HandleTouchCanceled()
@@ -150,16 +154,21 @@ namespace AndroidXR.KeyboardDemo
                 {
                     pointerId = 0,
                     phase = TrackpadPhase.Cancel,
+                    region = "keyboard",
                     x = 0f,
                     y = 0f,
                     pressure = 0f,
                 });
 
             presenter.SetStatus("Touch canceled because release occurred outside the pad.");
+            SendKeyboardPreview(null);
         }
 
         private void SendTouch(string phase, Vector2 touchPoint)
         {
+            var isSuggestionSelectionPoint = IsSuggestionSelectionPoint(touchPoint);
+            var browserTouchPoint = isSuggestionSelectionPoint ? touchPoint : MapTouchPointToKeyboard(touchPoint);
+
             relayConnection?.Send(
                 XrProtocolConstants.TrackpadTouch,
                 XrProtocolConstants.TargetBrowser,
@@ -167,8 +176,9 @@ namespace AndroidXR.KeyboardDemo
                 {
                     pointerId = 0,
                     phase = phase,
-                    x = Mathf.Clamp01(touchPoint.x),
-                    y = Mathf.Clamp01(touchPoint.y),
+                    region = isSuggestionSelectionPoint ? "suggestions" : "keyboard",
+                    x = Mathf.Clamp01(browserTouchPoint.x),
+                    y = Mathf.Clamp01(browserTouchPoint.y),
                     pressure = phase == TrackpadPhase.Up || phase == TrackpadPhase.Cancel ? 0f : 1f,
                 });
         }
@@ -176,6 +186,30 @@ namespace AndroidXR.KeyboardDemo
         private void SendKeyboardCommit(KeyDecodeResult result, Vector2 touchPoint, string text, string kind)
         {
             SendKeyboardCommit(result.Key.Id, result.Key.Label, touchPoint, text, kind, Mathf.Clamp01(Mathf.Exp(result.Score)));
+        }
+
+        private void SendKeyboardPreview(Vector2? touchPoint)
+        {
+            KeyboardKeyDefinition key = null;
+            if (touchPoint.HasValue)
+            {
+                key = decoder.Decode(layout.Keys, touchPoint.Value, commitDistanceThreshold).Key;
+            }
+
+            relayConnection?.Send(
+                XrProtocolConstants.KeyboardPreview,
+                XrProtocolConstants.TargetBrowser,
+                new KeyboardPreviewPayload
+                {
+                    keyId = key?.Id ?? string.Empty,
+                    label = key?.Label ?? string.Empty,
+                    isActive = key != null,
+                    touch = new NormalizedPointPayload
+                    {
+                        x = touchPoint.HasValue ? Mathf.Clamp01(touchPoint.Value.x) : 0f,
+                        y = touchPoint.HasValue ? Mathf.Clamp01(touchPoint.Value.y) : 0f,
+                    },
+                });
         }
 
         private void SendKeyboardCommit(string keyId, string label, Vector2 touchPoint, string text, string kind, float confidence)
@@ -317,6 +351,20 @@ namespace AndroidXR.KeyboardDemo
             presenter.SetOutput(typedText.ToString());
             presenter.SetStatus($"Selected suggestion {selectedWord}.");
             return true;
+        }
+
+        private bool IsSuggestionSelectionPoint(Vector2 touchPoint)
+        {
+            return touchPoint.y >= suggestionSelectionYMin &&
+                currentRawWord.Length > 0 &&
+                currentSuggestions.Length > 0;
+        }
+
+        private Vector2 MapTouchPointToKeyboard(Vector2 touchPoint)
+        {
+            return new Vector2(
+                Mathf.Clamp01(touchPoint.x),
+                Mathf.Clamp01(touchPoint.y / Mathf.Max(suggestionSelectionYMin, 0.0001f)));
         }
 
         private void ReplaceCurrentRawWord(string decodedWord)

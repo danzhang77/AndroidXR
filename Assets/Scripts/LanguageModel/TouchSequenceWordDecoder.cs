@@ -140,11 +140,7 @@ namespace AndroidXR.LanguageModel
                 }
 
                 var touchPoint = touchSequence[i];
-                var dx = touchPoint.x - key.GaussianMean.x;
-                var dy = touchPoint.y - key.GaussianMean.y;
-                score += -0.5f * (
-                    ((dx * dx) / Mathf.Max(key.GaussianSigma.x * key.GaussianSigma.x, 0.0001f)) +
-                    ((dy * dy) / Mathf.Max(key.GaussianSigma.y * key.GaussianSigma.y, 0.0001f)));
+                score += GaussianTouchModel.Score(touchPoint, key);
             }
 
             return score;

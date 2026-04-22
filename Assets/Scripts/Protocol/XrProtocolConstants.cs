@@ -11,6 +11,7 @@ namespace AndroidXR.Protocol
 
         public const string ClientHello = "client.hello";
         public const string TrackpadTouch = "trackpad.touch";
+        public const string KeyboardPreview = "keyboard.preview";
         public const string KeyboardCommit = "keyboard.commit";
         public const string KeyboardSuggestions = "keyboard.suggestions";
     }

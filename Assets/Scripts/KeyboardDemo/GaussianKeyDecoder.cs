@@ -30,14 +30,7 @@ namespace AndroidXR.KeyboardDemo
             for (var i = 0; i < keys.Count; i++)
             {
                 var candidate = keys[i];
-                var dx = touchPoint.x - candidate.GaussianMean.x;
-                var dy = touchPoint.y - candidate.GaussianMean.y;
-
-                var exponent = -0.5f * (
-                    ((dx * dx) / Mathf.Max(candidate.GaussianSigma.x * candidate.GaussianSigma.x, 0.0001f)) +
-                    ((dy * dy) / Mathf.Max(candidate.GaussianSigma.y * candidate.GaussianSigma.y, 0.0001f)));
-
-                var score = exponent;
+                var score = GaussianTouchModel.Score(touchPoint, candidate);
                 var distance = Vector2.Distance(touchPoint, candidate.Center);
 
                 if (score > bestScore)

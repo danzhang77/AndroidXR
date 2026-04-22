@@ -32,6 +32,7 @@ Coordinates are normalized floats in `[0,1]`. Origin is bottom-left, matching th
 - `client.hello`: announces role and capabilities.
 - `relay.status`: relay-generated client count/status update.
 - `trackpad.touch`: normalized touch down/move/up/cancel event.
+- `keyboard.preview`: Android-side decoder preview for the current touch point.
 - `keyboard.commit`: Android-side decoder committed a key.
 - `keyboard.suggestions`: Android-side decoder produced current word suggestions.
 - `keyboard.clear`: Android cleared committed text.
@@ -101,6 +102,22 @@ In that case, `text` contains the replacement word plus any trailing delimiter, 
 ```
 
 The browser replaces the currently visible unfinished word with `text`.
+
+### keyboard.preview
+
+```json
+{
+  "keyId": "H",
+  "label": "H",
+  "isActive": true,
+  "touch": {
+    "x": 0.57,
+    "y": 0.55
+  }
+}
+```
+
+The browser uses this to highlight keys during touch movement. This keeps preview highlighting aligned with the Android decoder instead of recomputing a separate browser heuristic.
 
 ### keyboard.suggestions
 

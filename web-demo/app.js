@@ -9,7 +9,6 @@ const cursorEl = document.querySelector('#cursor');
 const typedTextEl = document.querySelector('#typedText');
 const keyboardEl = document.querySelector('#keyboard');
 const suggestionsEl = document.querySelector('#suggestions');
-const SUGGESTION_SELECTION_Y_MIN = 0.86;
 
 let socket = null;
 let seq = 1;
@@ -64,14 +63,23 @@ function renderTouch(payload) {
     return;
   }
 
-  if (y >= SUGGESTION_SELECTION_Y_MIN && currentSuggestions.length > 0) {
+  if (payload.region === 'suggestions' && currentSuggestions.length > 0) {
     clearPreviewKey();
     setPreviewSuggestion(Math.min(2, Math.floor(x * 3)));
     return;
   }
 
   clearPreviewSuggestion();
-  setPreviewKey(findClosestKey(x, y));
+}
+
+function renderKeyboardPreview(payload) {
+  if (!payload || !payload.isActive || !payload.keyId) {
+    clearPreviewKey();
+    return;
+  }
+
+  clearPreviewSuggestion();
+  setPreviewKeyById(payload.keyId);
 }
 
 function renderCommit(payload) {
@@ -188,31 +196,14 @@ function renderKeyboard() {
   });
 }
 
-function findClosestKey(x, y) {
-  let closest = null;
-  let closestDistance = Number.POSITIVE_INFINITY;
-
-  keys.forEach((key) => {
-    const dx = x - key.centerX;
-    const dy = y - key.centerY;
-    const distance = Math.sqrt((dx * dx) + (dy * dy));
-    if (distance < closestDistance) {
-      closest = key;
-      closestDistance = distance;
-    }
-  });
-
-  return closest;
-}
-
-function setPreviewKey(key) {
-  if (!key || key.id === previewKeyId) {
+function setPreviewKeyById(keyId) {
+  if (!keyId || keyId === previewKeyId) {
     return;
   }
 
   clearPreviewKey();
-  previewKeyId = key.id;
-  keyElement(key.id)?.classList.add('preview');
+  previewKeyId = keyId;
+  keyElement(keyId)?.classList.add('preview');
 }
 
 function clearPreviewKey() {
@@ -287,7 +278,7 @@ function connect(url) {
     send(envelope('client.hello', 'relay', {
       role: 'browser',
       clientName: 'Browser Glasses Demo',
-      capabilities: ['trackpad.touch', 'keyboard.commit', 'keyboard.suggestions']
+      capabilities: ['trackpad.touch', 'keyboard.preview', 'keyboard.commit', 'keyboard.suggestions']
     }));
   });
 
@@ -305,6 +296,8 @@ function connect(url) {
 
     if (message.type === 'trackpad.touch') {
       renderTouch(message.payload);
+    } else if (message.type === 'keyboard.preview') {
+      renderKeyboardPreview(message.payload);
     } else if (message.type === 'keyboard.commit') {
       renderCommit(message.payload);
     } else if (message.type === 'keyboard.suggestions') {
